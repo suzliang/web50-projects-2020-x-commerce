@@ -1,0 +1,83 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% if listing %}
+        <div class="form-group" id="listing">
+            {% if request.user.is_authenticated %}
+                <form action="{% url 'listing' listing.id %}" method="POST">
+                    <div class="form-group" id="watchlist">
+                        {% csrf_token %}
+                        <input type="submit" name="watch" value="Watchlist">
+                    </div>
+                </form>
+            {% endif %}
+
+            {% if listing.winner %}
+                <div id="winner">
+                    <h2>This listing is closed. Winner: {{ listing.winner }}</h2>
+                </div>
+            {% endif %}
+
+            {% if listing.user == request.user %}
+                {% if listing.winner is None %}
+                    <form action="{% url 'listing' listing.id %}" method="POST">
+                        <div class="form-group" id="close">
+                            {% csrf_token %}
+                            <input type="submit" name="close" value="Close listing">
+                        </div>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            <h2>Listing: {{ listing.title }}</h2>
+            <img src={{ listing.image }} alt={{ listing.title }} height=300>
+            <h6>{{ listing.description}}</h6>
+            {% if listing.bid is None %}
+                <h3>{{ listing.starting_bid }}</h3>
+            {% else %}
+                <h3>{{ listing.bid.bid }}</h3>
+            {% endif %}
+            
+            {% if request.user.is_authenticated %}
+                {% if listing.winner is None %}
+                    <form action="{% url 'listing' listing.id %}" method="POST">
+                        <div class="form-group" id="bid">
+                            {% csrf_token %}
+                            {{ new_bid.as_p }}
+                            <input type="submit" name="new_bid" value="Place Bid">
+                        </div>
+                    </form>
+                {% endif %}
+            {% endif %}
+            
+            <h4>Details</h4>
+            <ul>
+                <li>Listed by: {{ listing.user }}</li>
+                <li>Created {{ listing.start_time }}</li>
+                <li>Ends {{ listing.end_time }}</li>
+                <li>Category: {{ listing.category }}</li>
+            </ul>
+
+            <h4>Comments</h4>
+            <ul>
+                {% if comments is None %}
+                    <li>No comments</li>
+                {% else %}
+                    {% for comment in comments %}
+                        <li>{{ comment }}</li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+            
+            {% if request.user.is_authenticated %}
+                <form action="{% url 'listing' listing.id %}" method="POST">
+                    <div class="form-group" id="comment">
+                        {% csrf_token %}
+                        {{ new_comment.as_p }}
+                        <input type="submit" name="new_comment" value="Enter">
+                    </div>
+                </form>
+            {% endif %}            
+        </div>
+    {% endif %}
+{% endblock %}
